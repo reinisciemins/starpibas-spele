@@ -1,1 +1,1 @@
-# starpibas-spele
+# starpibas spele
