@@ -10,7 +10,7 @@ def draw_vertical_gradient_rect(surface, start, end, rect):
 
     for y in range(rect.height):
         alpha = int((y / rect.height) * 255)
-        current_color = ((end[0] - start[0], end[1] - start[1], end[2] - start[2], alpha))
+        current_color = (end[0] - start[0], end[1] - start[1], end[2] - start[2], alpha)
         gradient.set_at((0, y), current_color)
 
     # merogo gradientu, lai aizpilditu visu taisnsturi
@@ -236,7 +236,7 @@ def main():
             if chosen_algorithm == 2:
                 draw_text(screen, verdana, "Alfa-Beta algoritms", pygame.Rect(307, 440, 240, 30), (50, 50, 50))
 
-            if player_starts == True:
+            if player_starts:
                 draw_text(screen, verdana, "Spēli sāk cilvēks - " + str(line_count), pygame.Rect(307, 420, 240, 30),
                           (50, 50, 50))
             else:
