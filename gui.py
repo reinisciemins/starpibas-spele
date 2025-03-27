@@ -277,6 +277,7 @@ def main():
 
             # tiek izskauts vienu reizi katra speles sakuma
             if should_generate_game:
+                timer = pygame.time.get_ticks() if player_turn == False else 0 # taimeris uzreiz ja dators veic pirmo gajienu
                 game_data = {i: random.randint(1, 3) for i in range(line_count)}
                 game_start_time = pygame.time.get_ticks()
                 player_score, computer_score = 80, 80
