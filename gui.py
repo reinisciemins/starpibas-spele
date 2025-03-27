@@ -2,7 +2,6 @@ import pygame
 import random
 import os
 
-
 # funkcija vertikala gradienta taisnstura uzzimesanai uz virsmas
 def draw_vertical_gradient_rect(surface, start, end, rect):
     # izveido vertikalu gradientu
@@ -17,10 +16,8 @@ def draw_vertical_gradient_rect(surface, start, end, rect):
     gradient = pygame.transform.scale(gradient, (rect.width, rect.height))
     surface.blit(gradient, rect.topleft)
 
-
 # nepieciesams statisks mainigais
 text_colors = {}
-
 
 # funkcija lai uzzimetu pogu ar tekstu uz virsmas
 def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
@@ -34,7 +31,10 @@ def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
     text_color = text_colors[text]
 
     # kursors atrodas uz pogas
-    if rect.collidepoint(mouse):
+    collide = rect.collidepoint(mouse)
+
+    # fade efekts
+    if collide:
         text_color += 4
         text_color = min(text_color, 230)
     else:
@@ -63,12 +63,13 @@ def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
     # saglaba jauno krasu nakamajai iteracijai
     text_colors[text] = text_color
 
+    # atgriez true kad nokliksinata poga
+    return click and collide
 
 def draw_text(surface, font, text, rect, color=(200, 200, 200)):
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=rect.center)
     surface.blit(text_surface, text_rect)
-
 
 # funckija kritosu dalinu zimesanai
 def draw_falling_particles(surface, particles):
@@ -86,7 +87,6 @@ def draw_falling_particles(surface, particles):
         if y > 480:
             particles[i] = (random.randint(0, 854), 0)
 
-
 def draw_outline(surface, rect, color, thickness=1):
     pygame.draw.line(surface, color, (rect.left, rect.top), (rect.left + rect.width, rect.top),
                      thickness)  # augseja linija
@@ -97,6 +97,68 @@ def draw_outline(surface, rect, color, thickness=1):
     pygame.draw.line(surface, color, (rect.left + rect.width, rect.top),
                      (rect.left + rect.width, rect.top + rect.height), thickness)  # laba linija
 
+def draw_data(surface, font, data, mouse_pos, mouse_click):
+    # saglaba nonenamo indeksu un vertibu
+    clicked_value = 0
+    to_remove = -1 
+
+    # prieks elementu kartosanas
+    items = list(data.items())
+
+    # parrekina indeksu pozicijas pec elementa nonemsanas
+    new_data = {i: v for i, (old_index, v) in enumerate(items)}
+
+    for index, value in new_data.items():
+        row = index % 3 # pieskir rindu 0, 1 vai 2
+        col = index // 3 # dinamiski pieskir kolonu
+
+        # elementu skaits rinda prieks centresanas
+        row_items = [k for k in new_data.keys() if k % 3 == row]
+        total_width = len(row_items) * 85 - 50 
+        start_x = (854 - total_width) // 2
+
+        x = start_x + col * 85
+        y = 170 + row * 60
+
+        # krasas pec vertibam
+        colors = {1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0)}
+        color = colors.get(value, (255, 255, 255))
+
+        rect = pygame.Rect(x, y, 35, 35)
+
+         # sis indeks tiks nonemts
+        if mouse_click and rect.collidepoint(mouse_pos):
+            clicked_value = value
+            to_remove = index
+
+        pygame.draw.rect(surface, color, rect)
+
+        # teksts ieks taisnstura
+        text_surface = font.render(str(value), True, (255, 255, 255))
+        text_rect = text_surface.get_rect(center=rect.center)
+        surface.blit(text_surface, text_rect)
+
+    # nonem uzspiesto pec indeksa
+    if to_remove != -1:
+        del new_data[to_remove]
+
+    # atjauno vardnicu ar jaunajiem indeksiem
+    data.clear()
+    data.update(new_data)
+
+    return clicked_value # atgriez nokliskinatas izveles vertibu
+
+# gadijumskaitlu algoritms atgriez izveles indeksu (data - vardnica ar vertibam un indeksiem)
+def get_random_choice( data ):
+    return random.choice(list(data.values()))
+
+# minimaksa algoritms atgriez izveles indeksu
+def get_minimax_choice( data ):
+    return
+
+# alfabeta algoritms atgriez izveles indeksu
+def get_alphabeta_choice( data ):
+    return
 
 # galvena funkcija
 def main():
@@ -118,31 +180,22 @@ def main():
     # saglaba statiskus mainigos
     running, mouse_click = True, False
     in_menu, in_options, in_game = True, False, False
+    should_generate_game = True
+
+    # speles gajieni
+    game_data = {}
 
     # inicialize 20 dalinu sakuma pozicijas
     particles = [(random.randint(0, 854), random.randint(0, 480)) for _ in range(75)]
 
-    # saglaba galvenas izveles plaknes izmerus
-    options_button_rect = pygame.Rect(367, 225, 120, 30)
-    start_button_rect = pygame.Rect(367, 185, 120, 30)
-    exit_button_rect = pygame.Rect(367, 265, 120, 30)
-
     # saglaba opciju izveles plaknes izmerus
-    alfabeta_button_rect = pygame.Rect(165, 245, 240, 30)
-    minmax_button_rect = pygame.Rect(165, 205, 240, 30)
-    random_button_rect = pygame.Rect(165, 165, 240, 30)
-    return_button_rect = pygame.Rect(367, 325, 120, 30)
-    playerstart_button_rect = pygame.Rect(449, 205, 240, 30)
-    pcstart_button_rect = pygame.Rect(449, 245, 240, 30)
     linecount_minus_rect = pygame.Rect(449, 165, 120, 30)
     linecount_plus_rect = pygame.Rect(569, 165, 120, 30)
 
-    # saglaba speles izveles plaknes izmerus
-    return_ingame_button_rect = pygame.Rect(367, 430, 120, 30)
-
     # izveletais algoritms, 0 - gadijumskaitlu, 1 - minimaksa, 2 - alfa-beta
-    chosen_algorithm = 0
-    player_starts = True
+    chosen_algorithm, game_start_time, timer, player_score, computer_score = 0, 0, 0, 80, 80
+    winner = "Jūs uzvarējāt!"
+    player_turn = True
 
     # speles virknes garums
     line_count = 15
@@ -161,40 +214,14 @@ def main():
                 mouse_click = pygame.mouse.get_pressed()[0] == 1
 
                 if mouse_click:
-                    if in_menu:
-                        if start_button_rect.collidepoint(mouse):
-                            in_game = True
-                            in_menu = False
-                        if exit_button_rect.collidepoint(mouse):
-                            pygame.quit()
-                            return
-                        if options_button_rect.collidepoint(mouse):
-                            in_options = True
-                            in_menu = False
                     if in_options:
-                        if return_button_rect.collidepoint(mouse):
-                            in_options = False
-                            in_menu = True
                         if linecount_minus_rect.collidepoint(mouse):
                             line_count -= 1
                             line_count = max(line_count, 15)
                         if linecount_plus_rect.collidepoint(mouse):
                             line_count += 1
                             line_count = min(line_count, 25)
-                        if random_button_rect.collidepoint(mouse):
-                            chosen_algorithm = 0
-                        if minmax_button_rect.collidepoint(mouse):
-                            chosen_algorithm = 1
-                        if alfabeta_button_rect.collidepoint(mouse):
-                            chosen_algorithm = 2
-                        if playerstart_button_rect.collidepoint(mouse):
-                            player_starts = True
-                        if pcstart_button_rect.collidepoint(mouse):
-                            player_starts = False
-                    if in_game:
-                        if return_ingame_button_rect.collidepoint(mouse):
-                            in_game = False
-                            in_menu = True
+
         # fona krasa
         screen.fill((0, 0, 0))
 
@@ -207,27 +234,113 @@ def main():
 
         # galvena izvele
         if in_menu:
-            draw_button(screen, verdana, "Sākt spēli", start_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Opcijas", options_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Iziet", exit_button_rect, mouse, mouse_click)
+            if draw_button(screen, verdana, "Sākt spēli", pygame.Rect(367, 185, 120, 30), mouse, mouse_click):
+                in_game, in_menu = True, False
+
+            if draw_button(screen, verdana, "Opcijas", pygame.Rect(367, 225, 120, 30), mouse, mouse_click):
+                in_options, in_menu = True, False
+
+            if draw_button(screen, verdana, "Iziet", pygame.Rect(367, 265, 120, 30), mouse, mouse_click):
+                pygame.quit()
+                return
 
         # opciju izvele
         if in_options:
             draw_text(screen, verdana, "Algoritma izvēlne", pygame.Rect(165, 125, 240, 30))
-            draw_button(screen, verdana, "Gadījumskaitļu algoritms", random_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Minimaksa algoritms", minmax_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Alfa-Beta algoritms", alfabeta_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Atgriezties", return_button_rect, mouse, mouse_click)
+            
+            if draw_button(screen, verdana, "Gadījumskaitļu algoritms", pygame.Rect(165, 165, 240, 30), mouse, mouse_click):
+                chosen_algorithm = 0
+
+            if draw_button(screen, verdana, "Minimaksa algoritms", pygame.Rect(165, 205, 240, 30), mouse, mouse_click):
+                chosen_algorithm = 1
+
+            if draw_button(screen, verdana, "Alfa-Beta algoritms", pygame.Rect(165, 245, 240, 30), mouse, mouse_click):
+                chosen_algorithm = 2
+
+            if draw_button(screen, verdana, "Atgriezties", pygame.Rect(367, 325, 120, 30), mouse, mouse_click):
+                in_options, in_menu = False, True
 
             draw_text(screen, verdana, "Spēles nosacījumi", pygame.Rect(449, 125, 240, 30))
             draw_button(screen, verdana, "-   Virknes garums: ", pygame.Rect(449, 165, 240, 30), mouse, mouse_click,
                         line_count, "   +")
-            draw_button(screen, verdana, "Spēli sāk cilvēks", playerstart_button_rect, mouse, mouse_click)
-            draw_button(screen, verdana, "Spēli sāk dators", pcstart_button_rect, mouse, mouse_click)
+            
+            if draw_button(screen, verdana, "Spēli sāk cilvēks", pygame.Rect(449, 205, 240, 30), mouse, mouse_click):
+                player_turn = True
+
+            if draw_button(screen, verdana, "Spēli sāk dators", pygame.Rect(449, 245, 240, 30), mouse, mouse_click):
+                player_turn = False
 
         # spele
         if in_game:
-            draw_button(screen, verdana, "Atgriezties", return_ingame_button_rect, mouse, mouse_click)
+            if draw_button(screen, verdana, "Atgriezties", pygame.Rect(367, 430, 120, 30), mouse, mouse_click):
+                in_game, in_menu = False, True
+
+            # tiek izskauts vienu reizi katra speles sakuma
+            if should_generate_game:
+                game_data = {i: random.randint(1, 3) for i in range(12)}
+                game_start_time = pygame.time.get_ticks()
+                player_score, computer_score = 80, 80
+                should_generate_game = False
+
+            # parbauda vai 0.5 sekundes pagajusas kops speles sakuma
+            # dazreiz ja kursors bija uz sakt kreisais peles kliksis nepaspej tikt 'atlaists'
+            # un tad sanak netisam izveleties kadu no gajieniem to neapzinoties
+            game_ready = pygame.time.get_ticks() - game_start_time > 300
+
+            # parbauda vai var tikt veikts gajiens
+            player_can_move = any(value <= player_score for value in game_data.values())
+            computer_can_move = any(value <= computer_score for value in game_data.values())
+
+            # vairs nevar veikt gajienus, nosaka uzvaretaju
+            if player_can_move == False and computer_can_move == False:
+                if player_score > computer_score:
+                    winner = "Jūs uzvarējāt :)"
+                elif computer_score > player_score:
+                    winner = "Jūs zaudējāt :("
+                else:
+                    winner = "Neizšķirts"
+
+                # rezultata teksts
+                draw_text(screen, verdana, winner, pygame.Rect(367, 225, 120, 30), (150, 150, 150))
+
+            # speletajs veic gajienu
+            elif player_turn and player_can_move:
+                turn_result = draw_data(screen, verdana, game_data, mouse, mouse_click) if game_ready else 0
+
+                if turn_result > 0:
+                    player_score -= turn_result
+                    player_turn = False
+                    timer = pygame.time.get_ticks()
+            # datora gajiens
+            elif player_turn == False and computer_can_move:
+                draw_data(screen, verdana, game_data, mouse, False)
+
+                if timer and pygame.time.get_ticks() - timer > 1000:  
+                    if game_data:
+                        if chosen_algorithm == 0:
+                            computer_choice = get_random_choice( game_data )
+                        elif chosen_algorithm == 1:
+                            continue # TODO - minimaksa 
+                        elif chosen_algorithm == 2:
+                            continue # TODO - alfabeta
+
+                        computer_score -= computer_choice
+                        
+                        for key, value in list(game_data.items()):
+                            if value == computer_choice:
+                                del game_data[key]
+                                break
+                        
+                    player_turn = True
+                    timer = 0
+
+            if player_turn and player_can_move:
+                draw_text(screen, verdana, "Tavs gājiens", pygame.Rect(367, 5, 120, 30), (150, 150, 150))
+            elif player_turn == False and computer_can_move:
+                draw_text(screen, verdana, "Dators veic gājienu", pygame.Rect(367, 5, 120, 30), (150, 150, 150))
+
+            draw_text(screen, verdana, "C: " + str(player_score), pygame.Rect(20, 5, 30, 30), (150, 150, 150))
+            draw_text(screen, verdana, "D: " + str(computer_score), pygame.Rect(804, 5, 30, 30), (150, 150, 150))
         else:
             if chosen_algorithm == 0:
                 draw_text(screen, verdana, "Gadījumskaitļu algoritms", pygame.Rect(307, 440, 240, 30), (50, 50, 50))
@@ -236,12 +349,14 @@ def main():
             if chosen_algorithm == 2:
                 draw_text(screen, verdana, "Alfa-Beta algoritms", pygame.Rect(307, 440, 240, 30), (50, 50, 50))
 
-            if player_starts:
+            if player_turn:
                 draw_text(screen, verdana, "Spēli sāk cilvēks - " + str(line_count), pygame.Rect(307, 420, 240, 30),
                           (50, 50, 50))
             else:
                 draw_text(screen, verdana, "Spēli sāk dators - " + str(line_count), pygame.Rect(307, 420, 240, 30),
                           (50, 50, 50))
+                
+            should_generate_game = True
 
         # atjaunina rezultatu 60 fps
         pygame.display.flip()
@@ -249,7 +364,6 @@ def main():
 
     # bez si jupyter notebook kernel crasho
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
