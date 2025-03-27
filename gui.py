@@ -173,6 +173,13 @@ def main():
     screen = pygame.display.set_mode((854, 480))
     pygame.display.set_caption("Starpības spēle - 1. praktiskais darbs - Mākslīgā intelekta pamati")
 
+    # inicialize ikonu
+    icon = pygame.image.load("icon.png")
+    pygame.display.set_icon(icon)
+    
+    # inicialize main menu logo ar rgba kanaliem
+    logo = pygame.image.load("logo.png").convert_alpha()
+
     # inicialize fontu
     verdana = pygame.font.Font(pygame.font.match_font("Verdana"), 16)
     verdana.set_bold(True)
@@ -234,13 +241,16 @@ def main():
 
         # galvena izvele
         if in_menu:
-            if draw_button(screen, verdana, "Sākt spēli", pygame.Rect(367, 185, 120, 30), mouse, mouse_click):
+            # fona logo
+            screen.blit(logo, (213, 5))
+
+            if draw_button(screen, verdana, "Sākt spēli", pygame.Rect(367, 210, 120, 30), mouse, mouse_click):
                 in_game, in_menu = True, False
 
-            if draw_button(screen, verdana, "Opcijas", pygame.Rect(367, 225, 120, 30), mouse, mouse_click):
+            if draw_button(screen, verdana, "Opcijas", pygame.Rect(367, 250, 120, 30), mouse, mouse_click):
                 in_options, in_menu = True, False
 
-            if draw_button(screen, verdana, "Iziet", pygame.Rect(367, 265, 120, 30), mouse, mouse_click):
+            if draw_button(screen, verdana, "Iziet", pygame.Rect(367, 290, 120, 30), mouse, mouse_click):
                 pygame.quit()
                 return
 
