@@ -1,6 +1,7 @@
 import pygame
 import random
 import os
+from minimax import MinimaxALG
 
 # funkcija vertikala gradienta taisnstura uzzimesanai uz virsmas
 def draw_vertical_gradient_rect(surface, start, end, rect):
@@ -190,6 +191,7 @@ def main():
 
     # inicialize pygame
     pygame.init()
+    minimax_alg = MinimaxALG()
     clock = pygame.time.Clock()
 
     # resolucijas un nosaukuma iestatisana
@@ -349,24 +351,29 @@ def main():
             elif player_turn == False and computer_can_move:
                 draw_data(screen, verdana, game_data, mouse, False)
 
-                if timer and pygame.time.get_ticks() - timer > 1000:  
+                if timer and pygame.time.get_ticks() - timer > 1000:
                     if game_data:
-                        if chosen_algorithm == 0:
-                            computer_choice = get_random_choice( game_data )
-                        elif chosen_algorithm == 1:
-                            continue # TODO - minimaksa 
-                        elif chosen_algorithm == 2:
-                            continue # TODO - alfabeta
+                        if chosen_algorithm == 0:  # Random
+                            computer_choice = get_random_choice(game_data)
+                        elif chosen_algorithm in [1, 2]:  # Minimax vai Alpha-beta
+                            # Pārveidojam game_data uz vārdnīcu ar skaitliskiem indeksiem
+                            indexed_data = {i: v for i, v in enumerate(game_data.values())}
+                            computer_choice = minimax_alg.get_minimax_choice(
+                                indexed_data,
+                                player_score,
+                                computer_score
+                            )
 
-                        computer_score -= computer_choice
-                        
-                        for key, value in list(game_data.items()):
-                            if value == computer_choice:
-                                del game_data[key]
-                                break
-                        
-                    player_turn = True
-                    timer = 0
+                        if computer_choice is not None and computer_choice <= computer_score:
+                            computer_score -= computer_choice
+                            # Meklējam pirmo atbilstošo vērtību un noņemam
+                            for key, value in list(game_data.items()):
+                                if value == computer_choice:
+                                    del game_data[key]
+                                    break
+
+                            player_turn = True
+                            timer = 0
 
             if player_turn and player_can_move:
                 draw_text(screen, verdana, "Tavs gājiens", pygame.Rect(367, 5, 120, 30), (150, 150, 150))
