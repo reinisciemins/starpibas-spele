@@ -1,5 +1,6 @@
 import random
 
+
 #Klase, kas atbilst vienai virsotnei spēles kokā
 class Virsotne:
     
