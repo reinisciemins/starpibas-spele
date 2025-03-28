@@ -97,7 +97,12 @@ def draw_outline(surface, rect, color, thickness=1):
     pygame.draw.line(surface, color, (rect.left + rect.width, rect.top),
                      (rect.left + rect.width, rect.top + rect.height), thickness)  # laba linija
 
+# ari nepieciesams statisks mainigais
+element_colors = {}
+
 def draw_data(surface, font, data, mouse_pos, mouse_click):
+    global element_colors
+
     # saglaba nonenamo indeksu un vertibu
     clicked_value = 0
     to_remove = -1 
@@ -114,24 +119,41 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
 
         # elementu skaits rinda prieks centresanas
         row_items = [k for k in new_data.keys() if k % 3 == row]
-        total_width = len(row_items) * 85 - 50 
+        total_width = len(row_items) * 85 - 50
         start_x = (854 - total_width) // 2
 
         x = start_x + col * 85
         y = 170 + row * 60
 
         # krasas pec vertibam
-        colors = {1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0)}
-        color = colors.get(value, (255, 255, 255))
+        base_colors = {1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0)}
+        base_color = base_colors.get(value, (255, 255, 255))
 
+        # saglaba krasu ja ta ieprieks nav bijusi saglabata
+        if index not in element_colors:
+            element_colors[index] = 170 
+
+        # kursors ir uzlikts virsu
         rect = pygame.Rect(x, y, 35, 35)
+        hover = rect.collidepoint(mouse_pos)
 
-         # sis indeks tiks nonemts
-        if mouse_click and rect.collidepoint(mouse_pos):
+        if hover:
+            element_colors[index] = min(element_colors[index] + 4, 255)
+        else:
+            element_colors[index] = max(element_colors[index] - 4, 170)
+
+        # Adjust brightness based on hover
+        hover_color = (min(base_color[0] + element_colors[index] - 170, 255), min(base_color[1] + element_colors[index] - 170, 255), min(base_color[2] + element_colors[index] - 170, 255))
+
+        # sis indeks tiks nonemts
+        if mouse_click and hover:
             clicked_value = value
             to_remove = index
 
-        pygame.draw.rect(surface, color, rect)
+        # uzzime pogu
+        pygame.draw.rect(surface, (125, 125, 125), (rect[0] - 2, rect[1] - 2, rect[2] + 4, rect[3] + 4))
+        pygame.draw.rect(surface, (0, 0, 0), (rect[0] - 1, rect[1] - 1, rect[2] + 2, rect[3] + 2))
+        draw_vertical_gradient_rect(surface, (0, 0, 0), hover_color, rect)
 
         # teksts ieks taisnstura
         text_surface = font.render(str(value), True, (255, 255, 255))
@@ -141,6 +163,7 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
     # nonem uzspiesto pec indeksa
     if to_remove != -1:
         del new_data[to_remove]
+        del element_colors[to_remove]
 
     # atjauno vardnicu ar jaunajiem indeksiem
     data.clear()
