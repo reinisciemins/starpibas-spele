@@ -1,7 +1,6 @@
 import pygame
 import random
 import os
-from minimax import MinimaxALG
 
 # funkcija vertikala gradienta taisnstura uzzimesanai uz virsmas
 def draw_vertical_gradient_rect(surface, start, end, rect):
@@ -17,10 +16,8 @@ def draw_vertical_gradient_rect(surface, start, end, rect):
     gradient = pygame.transform.scale(gradient, (rect.width, rect.height))
     surface.blit(gradient, rect.topleft)
 
-
 # nepieciesams statisks mainigais
 text_colors = {}
-
 
 # funkcija lai uzzimetu pogu ar tekstu uz virsmas
 def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
@@ -69,12 +66,10 @@ def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
     # atgriez true kad nokliksinata poga
     return click and collide
 
-
 def draw_text(surface, font, text, rect, color=(200, 200, 200)):
     text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect(center=rect.center)
     surface.blit(text_surface, text_rect)
-
 
 # funckija kritosu dalinu zimesanai
 def draw_falling_particles(surface, particles):
@@ -92,7 +87,6 @@ def draw_falling_particles(surface, particles):
         if y > 480:
             particles[i] = (random.randint(0, 854), 0)
 
-
 def draw_outline(surface, rect, color, thickness=1):
     pygame.draw.line(surface, color, (rect.left, rect.top), (rect.left + rect.width, rect.top),
                      thickness)  # augseja linija
@@ -103,11 +97,15 @@ def draw_outline(surface, rect, color, thickness=1):
     pygame.draw.line(surface, color, (rect.left + rect.width, rect.top),
                      (rect.left + rect.width, rect.top + rect.height), thickness)  # laba linija
 
+# ari nepieciesams statisks mainigais
+element_colors = {}
 
 def draw_data(surface, font, data, mouse_pos, mouse_click):
+    global element_colors
+
     # saglaba nonenamo indeksu un vertibu
     clicked_value = 0
-    to_remove = -1
+    to_remove = -1 
 
     # prieks elementu kartosanas
     items = list(data.items())
@@ -116,8 +114,8 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
     new_data = {i: v for i, (old_index, v) in enumerate(items)}
 
     for index, value in new_data.items():
-        row = index % 3  # pieskir rindu 0, 1 vai 2
-        col = index // 3  # dinamiski pieskir kolonu
+        row = index % 3 # pieskir rindu 0, 1 vai 2
+        col = index // 3 # dinamiski pieskir kolonu
 
         # elementu skaits rinda prieks centresanas
         row_items = [k for k in new_data.keys() if k % 3 == row]
@@ -128,17 +126,34 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
         y = 170 + row * 60
 
         # krasas pec vertibam
-        colors = {1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0)}
-        color = colors.get(value, (255, 255, 255))
+        base_colors = {1: (255, 0, 0), 2: (0, 0, 255), 3: (0, 255, 0)}
+        base_color = base_colors.get(value, (255, 255, 255))
 
+        # saglaba krasu ja ta ieprieks nav bijusi saglabata
+        if index not in element_colors:
+            element_colors[index] = 170 
+
+        # kursors ir uzlikts virsu
         rect = pygame.Rect(x, y, 35, 35)
+        hover = rect.collidepoint(mouse_pos)
+
+        if hover:
+            element_colors[index] = min(element_colors[index] + 4, 255)
+        else:
+            element_colors[index] = max(element_colors[index] - 4, 170)
+
+        # Adjust brightness based on hover
+        hover_color = (min(base_color[0] + element_colors[index] - 170, 255), min(base_color[1] + element_colors[index] - 170, 255), min(base_color[2] + element_colors[index] - 170, 255))
 
         # sis indeks tiks nonemts
-        if mouse_click and rect.collidepoint(mouse_pos):
+        if mouse_click and hover:
             clicked_value = value
             to_remove = index
 
-        pygame.draw.rect(surface, color, rect)
+        # uzzime pogu
+        pygame.draw.rect(surface, (125, 125, 125), (rect[0] - 2, rect[1] - 2, rect[2] + 4, rect[3] + 4))
+        pygame.draw.rect(surface, (0, 0, 0), (rect[0] - 1, rect[1] - 1, rect[2] + 2, rect[3] + 2))
+        draw_vertical_gradient_rect(surface, (0, 0, 0), hover_color, rect)
 
         # teksts ieks taisnstura
         text_surface = font.render(str(value), True, (255, 255, 255))
@@ -148,28 +163,25 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
     # nonem uzspiesto pec indeksa
     if to_remove != -1:
         del new_data[to_remove]
+        del element_colors[to_remove]
 
     # atjauno vardnicu ar jaunajiem indeksiem
     data.clear()
     data.update(new_data)
 
-    return clicked_value  # atgriez nokliskinatas izveles vertibu
-
+    return clicked_value # atgriez nokliskinatas izveles vertibu
 
 # gadijumskaitlu algoritms atgriez izveles indeksu (data - vardnica ar vertibam un indeksiem)
-def get_random_choice(data):
+def get_random_choice( data ):
     return random.choice(list(data.values()))
 
-
 # minimaksa algoritms atgriez izveles indeksu
-def get_minimax_choice(data):
+def get_minimax_choice( data ):
     return
-
 
 # alfabeta algoritms atgriez izveles indeksu
-def get_alphabeta_choice(data):
+def get_alphabeta_choice( data ):
     return
-
 
 # galvena funkcija
 def main():
@@ -178,7 +190,6 @@ def main():
 
     # inicialize pygame
     pygame.init()
-    minimax_alg = MinimaxALG()
     clock = pygame.time.Clock()
 
     # resolucijas un nosaukuma iestatisana
@@ -188,7 +199,7 @@ def main():
     # inicialize ikonu
     icon = pygame.image.load("icon.png")
     pygame.display.set_icon(icon)
-
+    
     # inicialize main menu logo ar rgba kanaliem
     logo = pygame.image.load("logo.png").convert_alpha()
 
@@ -269,9 +280,8 @@ def main():
         # opciju izvele
         if in_options:
             draw_text(screen, verdana, "Algoritma izvēlne", pygame.Rect(165, 125, 240, 30))
-
-            if draw_button(screen, verdana, "Gadījumskaitļu algoritms", pygame.Rect(165, 165, 240, 30), mouse,
-                           mouse_click):
+            
+            if draw_button(screen, verdana, "Gadījumskaitļu algoritms", pygame.Rect(165, 165, 240, 30), mouse, mouse_click):
                 chosen_algorithm = 0
 
             if draw_button(screen, verdana, "Minimaksa algoritms", pygame.Rect(165, 205, 240, 30), mouse, mouse_click):
@@ -286,7 +296,7 @@ def main():
             draw_text(screen, verdana, "Spēles nosacījumi", pygame.Rect(449, 125, 240, 30))
             draw_button(screen, verdana, "-   Virknes garums: ", pygame.Rect(449, 165, 240, 30), mouse, mouse_click,
                         line_count, "   +")
-
+            
             if draw_button(screen, verdana, "Spēli sāk cilvēks", pygame.Rect(449, 205, 240, 30), mouse, mouse_click):
                 player_turn = True
 
@@ -300,7 +310,7 @@ def main():
 
             # tiek izskauts vienu reizi katra speles sakuma
             if should_generate_game:
-                timer = pygame.time.get_ticks() if player_turn == False else 0  # taimeris uzreiz ja dators veic pirmo gajienu
+                timer = pygame.time.get_ticks() if player_turn == False else 0 # taimeris uzreiz ja dators veic pirmo gajienu
                 game_data = {i: random.randint(1, 3) for i in range(line_count)}
                 game_start_time = pygame.time.get_ticks()
                 player_score, computer_score = 80, 80
@@ -339,33 +349,24 @@ def main():
             elif player_turn == False and computer_can_move:
                 draw_data(screen, verdana, game_data, mouse, False)
 
-                if timer and pygame.time.get_ticks() - timer > 1000:
+                if timer and pygame.time.get_ticks() - timer > 1000:  
                     if game_data:
-                        if chosen_algorithm == 0:  # Random
-                            computer_choice = get_random_choice(game_data)
-                        elif chosen_algorithm == 1: # Minimax
-                            # pārveidoju game_data uz vārdnīcu ar skaitliskiem indeksiem
-                            indexed_data = {i: v for i, v in enumerate(game_data.values())}
-                            computer_choice = minimax_alg.get_minimax_choice(
-                                indexed_data,
-                                player_score,
-                                computer_score
-                            )
+                        if chosen_algorithm == 0:
+                            computer_choice = get_random_choice( game_data )
+                        elif chosen_algorithm == 1:
+                            continue # TODO - minimaksa 
                         elif chosen_algorithm == 2:
-                            continue  # TODO - alfabeta
+                            continue # TODO - alfabeta
 
-
-                        if computer_choice is not None and computer_choice <= computer_score:
-                            computer_score -= computer_choice
-
-                            # kad atrod atbilstošo vērtību to noņemam
-                            for key, value in list(game_data.items()):
-                                if value == computer_choice:
-                                    del game_data[key]
-                                    break
-
-                            player_turn = True
-                            timer = 0
+                        computer_score -= computer_choice
+                        
+                        for key, value in list(game_data.items()):
+                            if value == computer_choice:
+                                del game_data[key]
+                                break
+                        
+                    player_turn = True
+                    timer = 0
 
             if player_turn and player_can_move:
                 draw_text(screen, verdana, "Tavs gājiens", pygame.Rect(367, 5, 120, 30), (150, 150, 150))
@@ -388,7 +389,7 @@ def main():
             else:
                 draw_text(screen, verdana, "Spēli sāk dators - " + str(line_count), pygame.Rect(307, 420, 240, 30),
                           (50, 50, 50))
-
+                
             should_generate_game = True
 
         # atjaunina rezultatu 60 fps
@@ -397,7 +398,6 @@ def main():
 
     # bez si jupyter notebook kernel crasho
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
