@@ -377,13 +377,11 @@ def main():
                         elif chosen_algorithm == 2:  # Alpha-beta
                             # Pārveidojam game_data uz vārdnīcu ar skaitliskiem indeksiem
                             indexed_data = {i: v for i, v in enumerate(game_data.values())}
-                            computer_choice = alphabeta_alg.get_best_move(
+                            computer_choice, _ = alphabeta_alg.get_best_move(
                                 computer_score,
                                 player_score,
                                 4,  # depth
                                 True  # is_ai_turn, pieņemot, ka AI ir datora gājiens
-                            )
-
                             )
 
                         if computer_choice is not None and computer_choice <= computer_score:
