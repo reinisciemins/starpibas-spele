@@ -374,16 +374,16 @@ def main():
                                 player_score,
                                 computer_score
                             )
-                        elif chosen_algorithm == 2:  # Alpha-beta
-                            # Pārveidojam game_data uz vārdnīcu ar skaitliskiem indeksiem
-                            indexed_data = {i: v for i, v in enumerate(game_data.values())}
-                            computer_choice, _ = alphabeta_alg.get_best_move(
-                                computer_score,
-                                player_score,
-                                4,  # depth
-                                True  # is_ai_turn, pieņemot, ka AI ir datora gājiens
-                            )
-
+                            
+                            elif chosen_algorithm == 2:
+                             # Izvēlēts Alpha-Beta algoritms – iegūstam labāko gājienu
+                             computer_choice = alphabeta_alg.get_best_move(
+                                 list(game_data.values()),  # spēles skaitļu saraksts kā pirmais arguments
+                                 computer_score,            # datora (AI) punkti
+                                 player_score,              # spēlētāja punkti
+                                 4                          # dziļums (depth) = 4
+                                 )
+                                
                         if computer_choice is not None and computer_choice <= computer_score:
                             computer_score -= computer_choice
                             # Meklējam pirmo atbilstošo vērtību un noņemam
