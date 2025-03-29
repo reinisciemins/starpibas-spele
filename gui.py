@@ -4,6 +4,7 @@ import os
 from minimax import MinimaxALG
 from alfabeta import AlphaBetaALG
 
+
 # funkcija vertikala gradienta taisnstura uzzimesanai uz virsmas
 def draw_vertical_gradient_rect(surface, start, end, rect):
     # izveido vertikalu gradientu
