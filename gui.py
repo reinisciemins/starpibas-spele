@@ -2,6 +2,7 @@ import pygame
 import random
 import os
 from minimax import MinimaxALG
+from alfabeta import AlphaBetaALG
 
 # funkcija vertikala gradienta taisnstura uzzimesanai uz virsmas
 def draw_vertical_gradient_rect(surface, start, end, rect):
@@ -182,7 +183,7 @@ def get_minimax_choice( data ):
 
 # alfabeta algoritms atgriez izveles indeksu
 def get_alphabeta_choice( data ):
-    return
+    return alphabeta_alg.get_best_move(data, 4)
 
 # galvena funkcija
 def main():
@@ -192,6 +193,7 @@ def main():
     # inicialize pygame
     pygame.init()
     minimax_alg = MinimaxALG()
+    alphabeta_alg = AlphaBetaALG()
     clock = pygame.time.Clock()
 
     # resolucijas un nosaukuma iestatisana
@@ -355,13 +357,22 @@ def main():
                     if game_data:
                         if chosen_algorithm == 0:  # Random
                             computer_choice = get_random_choice(game_data)
-                        elif chosen_algorithm in [1, 2]:  # Minimax vai Alpha-beta
+                       elif chosen_algorithm == 1:  # Minimax
                             # Pārveidojam game_data uz vārdnīcu ar skaitliskiem indeksiem
                             indexed_data = {i: v for i, v in enumerate(game_data.values())}
                             computer_choice = minimax_alg.get_minimax_choice(
                                 indexed_data,
                                 player_score,
                                 computer_score
+                            )
+                        elif chosen_algorithm == 2:  # Alpha-beta
+                            # Pārveidojam game_data uz vārdnīcu ar skaitliskiem indeksiem
+                            indexed_data = {i: v for i, v in enumerate(game_data.values())}
+                            computer_choice = alphabeta_alg.get_best_move(
+                                indexed_data,
+                                player_score,
+                                computer_score,
+                                depth=4
                             )
 
                         if computer_choice is not None and computer_choice <= computer_score:
