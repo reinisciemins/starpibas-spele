@@ -1,71 +1,68 @@
 class AlphaBetaALG:
     def __init__(self):
-        # Iekšējs skaitītājs, cik mezgli (stāvokļi) pārmeklēti
         self.nodes_visited = 0
 
-    def get_best_move(self, ai_score, opp_score, depth, is_ai_turn=True):
-        # Inicializē mezglu skaitītāju un alfa-beta sākumvērtības
+    def evaluate(self, ai_points, human_points):
+        # Pārbauda, vai kāds spēlētājs ir zaudējis, ja viņa punkti ir 0 vai mazāk
+        if ai_points <= 0 and human_points <= 0:
+            return 0  # Neizšķirts
+        elif ai_points <= 0:
+            return float('-inf')  # Ļoti slikts AI
+        elif human_points <= 0:
+            return float('inf')  # Ļoti labs AI
+        # Heuristiska vērtēšana parasti
+        return ai_points - human_points
+
+    def get_best_move(self, sequence, ai_points, human_points, depth=4):
         self.nodes_visited = 0
-        alpha = float('-inf')
-        beta = float('inf')
         best_move = None
-        best_value = float('-inf') if is_ai_turn else float('inf')
-
-        # Ģenerējam visus iespējamos gājienus no dotā stāvokļa
-        moves = [m for m in [1, 2, 3] if (ai_score if is_ai_turn else opp_score) - m >= 0]
+        best_value = float('-inf')
+        moves = sorted(sequence)
+        last_move = None
         for move in moves:
-            new_ai = ai_score - move if is_ai_turn else ai_score
-            new_opp = opp_score - move if not is_ai_turn else opp_score
-            value = self._alpha_beta(new_ai, new_opp, depth - 1, alpha, beta, not is_ai_turn)
-            if is_ai_turn and value > best_value:
+            if move == last_move:
+                continue
+            last_move = move
+            if move > ai_points:
+                continue
+            new_sequence = sequence.copy()
+            new_sequence.remove(move)
+            new_ai_points = ai_points - move
+            value = self._alpha_beta(new_sequence, new_ai_points, human_points, depth - 1, float('-inf'), float('inf'), False)
+            if value > best_value:
                 best_value = value
                 best_move = move
-                alpha = max(alpha, value)
-            if not is_ai_turn and value < best_value:
-                best_value = value
-                best_move = move
-                beta = min(beta, value)
-            if beta <= alpha:
-                break
-        return best_move, best_value
+        return best_move
 
-    def _alpha_beta(self, ai_score, opp_score, depth, alpha, beta, is_ai_turn):
+    def _alpha_beta(self, sequence, ai_points, human_points, depth, alpha, beta, maximizing):
         self.nodes_visited += 1
-        if depth == 0 or ai_score == 0 or opp_score == 0:
-            return self._evaluate(ai_score, opp_score)
-
-        moves = [m for m in [1, 2, 3] if (ai_score if is_ai_turn else opp_score) - m >= 0]
-        if is_ai_turn:
+        if depth == 0 or not sequence or ai_points <= 0 or human_points <= 0:
+            return self.evaluate(ai_points, human_points)
+        if maximizing:
             max_eval = float('-inf')
-            for move in moves:
-                new_ai = ai_score - move
-                new_opp = opp_score
-                eval_val = self._alpha_beta(new_ai, new_opp, depth - 1, alpha, beta, False)
+            for move in sorted(sequence):
+                if move > ai_points:
+                    continue
+                new_sequence = sequence.copy()
+                new_sequence.remove(move)
+                new_ai_points = ai_points - move
+                eval_val = self._alpha_beta(new_sequence, new_ai_points, human_points, depth - 1, alpha, beta, False)
                 max_eval = max(max_eval, eval_val)
                 alpha = max(alpha, eval_val)
-                if beta <= alpha:
+                if alpha >= beta:
                     break
             return max_eval
         else:
             min_eval = float('inf')
-            for move in moves:
-                new_ai = ai_score
-                new_opp = opp_score - move
-                eval_val = self._alpha_beta(new_ai, new_opp, depth - 1, alpha, beta, True)
+            for move in sorted(sequence):
+                if move > human_points:
+                    continue
+                new_sequence = sequence.copy()
+                new_sequence.remove(move)
+                new_human_points = human_points - move
+                eval_val = self._alpha_beta(new_sequence, ai_points, new_human_points, depth - 1, alpha, beta, True)
                 min_eval = min(min_eval, eval_val)
                 beta = min(beta, eval_val)
                 if beta <= alpha:
                     break
             return min_eval
-
-    def _evaluate(self, ai_score, opp_score):
-        if ai_score == 0 or opp_score == 0:
-            if ai_score > opp_score:
-                return float('inf')
-            elif ai_score < opp_score:
-                return float('-inf')
-            else:
-                return 0
-        point_diff = ai_score - opp_score
-        opp_moves = 3 - min(3, opp_score)
-        return point_diff + (3 - opp_moves)
