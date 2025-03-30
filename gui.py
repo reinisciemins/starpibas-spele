@@ -189,10 +189,6 @@ def get_random_choice(data):
     return random.choice(list(data.values()))
 
 
-# alfabeta algoritms atgriez izveles indeksu
-def get_alphabeta_choice(data):
-    return alphabeta_alg.get_best_move(data, 4)
-
 # galvena funkcija
 def main():
     # nomaina aktivo direktoriju uz to kur python fails atrodas (doma uztaisit kkadu logo prieks main ekrana)
@@ -375,7 +371,7 @@ def main():
                                 computer_score
                             )
                             
-                            elif chosen_algorithm == 2:
+                        elif chosen_algorithm == 2:
                              # Izvēlēts Alpha-Beta algoritms – iegūstam labāko gājienu
                              computer_choice = alphabeta_alg.get_best_move(
                                  list(game_data.values()),  # spēles skaitļu saraksts kā pirmais arguments
