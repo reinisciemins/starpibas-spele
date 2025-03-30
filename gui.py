@@ -148,9 +148,9 @@ def draw_data(surface, font, data, mouse_pos, mouse_click):
         hover = rect.collidepoint(mouse_pos)
 
         if hover:
-            element_colors[index] = min(element_colors[index] + 4, 255)
+            element_colors[index] = min(element_colors[index] + 7, 255)
         else:
-            element_colors[index] = max(element_colors[index] - 4, 170)
+            element_colors[index] = max(element_colors[index] - 7, 170)
 
         # Adjust brightness based on hover
         hover_color = (
