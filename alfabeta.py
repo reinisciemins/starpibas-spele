@@ -1,27 +1,4 @@
-class Node:
-    def __init__(self, sequence, player_score, ai_score, move=None, level=0, is_max=True, value=None):
-        self.sequence = sequence
-        self.player_score = player_score
-        self.ai_score = ai_score
-        self.move = move
-        self.level = level
-        self.is_max = is_max
-        self.value = value
-        self.children = []
-
-class GameTree:
-    def __init__(self):
-        self.root = None
-        self.nodes = []
-
-    def add_node(self, parent, sequence, player_score, ai_score, move, level, is_max):
-        node = Node(sequence, player_score, ai_score, move, level, is_max)
-        if parent:
-            parent.children.append(node)
-        else:
-            self.root = node
-        self.nodes.append(node)
-        return node
+from dataStructure import Node, GameTree
 
 class AlphaBetaALG:
     def __init__(self):
@@ -33,7 +10,8 @@ class AlphaBetaALG:
 
     def get_best_move(self, sequence, player_score, ai_score, depth=4):
         self.nodes_visited = 0
-        root_node = self.game_tree.add_node(None, sequence, player_score, ai_score, None, 0, True)
+        # Parameters: parent, sequence, player_score, ai_score, level, move=None, is_max=None, value=None
+        root_node = self.game_tree.add_node(None, sequence[:], player_score, ai_score, 0, None, True, None)
         best_value = float('-inf')
         best_move = None
 
@@ -45,6 +23,7 @@ class AlphaBetaALG:
             new_sequence.remove(move)
             new_ai_score = ai_score - move
 
+            # Pass the correct parameters to _alpha_beta
             _, value = self._alpha_beta(new_sequence, player_score, new_ai_score, depth - 1, False, float('-inf'), float('inf'), root_node, move)
 
             if value > best_value:
@@ -55,7 +34,8 @@ class AlphaBetaALG:
         return best_move
 
     def _alpha_beta(self, sequence, p_score, ai_score, depth, is_maximizing, alpha, beta, parent_node, move):
-        current_node = self.game_tree.add_node(parent_node, sequence, p_score, ai_score, move, parent_node.level + 1, is_maximizing)
+        # Parameters: parent, sequence, player_score, ai_score, level, move=None, is_max=None, value=None
+        current_node = self.game_tree.add_node(parent_node, sequence[:], p_score, ai_score, int(parent_node.level) + 1, move, is_maximizing, None)
         self.nodes_visited += 1
 
         if depth == 0 or not sequence:
@@ -94,18 +74,10 @@ class AlphaBetaALG:
     def print_tree(self, node=None, level=0):
         if node is None:
             node = self.game_tree.root
-        print('  ' * level + f'Node({node.move}): Seq={node.sequence}, P={node.player_score}, AI={node.ai_score}, Val={node.value}')
+        print('  ' * level + f'Node({node.id}, {node.move}): Seq={node.sequence}, P={node.player_score}, AI={node.ai_score}, Val={node.value}')
         for child in node.children:
             self.print_tree(child, level + 1)
 
-# Example usage
-if __name__ == "__main__":
-    alg = AlphaBetaALG()
-    game_data = [1, 2, 3]
-    player_score = 5
-    ai_score = 5
-    best_move = alg.get_best_move(game_data, player_score, ai_score)
-    print("Best move:", best_move)
-    print("Game tree:")
-    alg.print_tree()
+
+
 

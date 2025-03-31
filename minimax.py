@@ -1,30 +1,4 @@
-class Node:
-    def __init__(self, id, sequence, player_score, ai_score, level, value=None):
-        self.id = id
-        self.sequence = sequence
-        self.player_score = player_score
-        self.ai_score = ai_score
-        self.level = level
-        self.value = value
-        self.children = []
-
-
-class GameTree:
-    def __init__(self):
-        self.root = None
-        self.node_count = 0
-
-    def add_node(self, parent, sequence, player_score, ai_score, level, value=None):
-        node_id = f"N{self.node_count}"
-        new_node = Node(node_id, sequence, player_score, ai_score, level, value)
-        self.node_count += 1
-
-        if parent:
-            parent.children.append(new_node)
-        else:
-            self.root = new_node
-        return new_node
-
+from dataStructure import Node, GameTree
 
 class MinimaxALG:
     def __init__(self):
