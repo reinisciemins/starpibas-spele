@@ -33,7 +33,7 @@ class MinimaxALG:
         self.current_id = 0
 
     def evaluate(self, player_score, ai_score):
-        return ai_score - player_score
+        return (ai_score - player_score) * 10
 
     def get_minimax_choice(self, game_data, player_score, ai_score, depth=4):
         self.nodes_visited = 0
