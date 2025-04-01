@@ -233,7 +233,7 @@ def main():
     # izveletais algoritms, 0 - gadijumskaitlu, 1 - minimaksa, 2 - alfa-beta
     chosen_algorithm, game_start_time, timer, player_score, computer_score = 0, 0, 0, 80, 80
     winner = "Jūs uzvarējāt!"
-    player_turn = True
+    player_turn = False
 
     # speles virknes garums
     line_count = 15
