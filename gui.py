@@ -40,11 +40,9 @@ def draw_button(surface, font, text, rect, mouse, click, value=0, extra1=""):
 
     # fade efekts
     if collide:
-        text_color += 4
-        text_color = min(text_color, 230)
+        text_color = min(text_color + 4, 230)
     else:
-        text_color -= 4
-        text_color = max(text_color, 200)
+        text_color = max(text_color - 4, 200)
 
     # inicialize krasas
     color = text_color - 150
