@@ -280,7 +280,7 @@ def main():
                 in_options, in_menu = True, False
 
             if draw_button(screen, verdana, "Iziet", pygame.Rect(367, 290, 120, 30), mouse, mouse_click):
-                pygame.quit()
+                running = False
                 return
 
         # opciju izvele
